@@ -1,0 +1,99 @@
+#! /usr/bin/perl
+use v5.36;
+
+use File::Basename;
+use Getopt::Long;
+use autodie;
+use Pod::Usage;
+use File::Path qw(make_path);
+use File::Temp qw(tempdir);
+
+my $input          = undef;
+my $xdg_cache_home = $ENV{XDG_CACHE_HOME} || "$ENV{HOME}/.cache";
+my $tmproot        = "${xdg_cache_home}/black-white-temp";
+my $pagesblock     = 100;
+my $density        = 300;
+my $output         = undef;
+my $help           = 0;
+my $man            = 0;
+
+GetOptions(
+    "input=s"      => \$input,
+    "tmproot=s"    => \$tmproot,
+    "pagesblock=s" => \$pagesblock,
+    "density=i"    => \$density,
+    "output=s"     => \$output,
+    "help|?"       => \$help,
+    'man'          => \$man
+) or pod2usage(2);
+
+pod2usage(1)               if $help;
+pod2usage( -verbose => 2 ) if $man;
+defined $input  or pod2usage(1);
+defined $output or pod2usage(1);
+
+make_path($tmproot);
+
+my $tmpdir = tempdir( DIR => $tmproot, CLEANUP => 1 );
+
+sub teste ( $beg, $end ) {
+    use autodie;
+
+    my $tmp_file            = "${tmpdir}/tmp-${beg}-${end}.pdf";
+    my $tmp_normalized_file = "${tmp_file}-normalized.pdf";
+
+    `pdftk "$input" cat $beg-$end output $tmp_file`;
+
+# NOTE: For some reason, when this command is killed due to lack of memory, perl doesn't fail, even though
+# autodie is being used.
+`convert -density $density "$tmp_file"  +dither  -colors 2  -colorspace gray -normalize  "$tmp_normalized_file"`;
+    return $tmp_normalized_file;
+}
+
+my $number_of_pages =
+  `pdfinfo "$input"` =~ /Pages:\s+(\d+)/m
+  ? $1
+  : die "Failed!!!";
+
+my @arr = ();
+my $q   = int( $number_of_pages / $pagesblock );
+for my $i ( 1 .. $q ) {
+    my $end = $i * $pagesblock;
+    my $beg = ( $i - 1 ) * $pagesblock + 1;
+    say "Processing pages from $beg to $end";
+
+    push @arr, teste( $beg, $end );
+}
+
+my $end = $number_of_pages;
+my $beg = $pagesblock * $q + 1;
+if ( $beg <= $end ) {
+    say "Processing pages from $beg to $end";
+    push @arr, teste( $beg, $end );
+}
+
+my $files = join( " ", @arr );
+`pdftk $files cat output ${output}`;
+
+__END__
+
+=head1 NAME
+
+caesar - Convert a pdf into black and white.
+
+=head1 SYNOPSIS
+
+caesar --input inputfile --output outputfile [options]
+
+ Options:
+   --help            brief help message
+   --man             full documentation
+   --pagesblock      how much to convert at a time (default 100). Decrease this value if you have memory issues.
+   --density         the density value to pass over to convert (default 300)
+
+=head1 DESCRIPTION
+
+B<This program> will read the given input file(s) and do something
+useful with the contents thereof.
+
+=cut
