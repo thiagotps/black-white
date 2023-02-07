@@ -79,21 +79,22 @@ __END__
 
 =head1 NAME
 
-caesar - Convert a pdf into black and white.
+black-white - Convert a pdf into black and white.
 
 =head1 SYNOPSIS
 
-caesar --input inputfile --output outputfile [options]
+black-white --input inputfile --output outputfile [options]
 
  Options:
    --help            brief help message
    --man             full documentation
    --pagesblock      how much to convert at a time (default 100). Decrease this value if you have memory issues.
    --density         the density value to pass over to convert (default 300)
+   --output          The output file path
+   --tmproot         The path to the directory where the temporary directory will be placed. Default is taken from the XDG_CACHE_HOME env variable.
 
 =head1 DESCRIPTION
 
-B<This program> will read the given input file(s) and do something
-useful with the contents thereof.
+B<black-white> will turn a input pdf file into monochromatic black and white, using pdftk and imagemagick's convert.
 
 =cut
