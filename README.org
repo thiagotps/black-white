@@ -6,6 +6,7 @@
 * Usage
 black-white --input inputfile --output outputfile [options]
 
+#+begin_src text
  Options:
    --help            brief help message
    --man             full documentation
@@ -13,3 +14,4 @@ black-white --input inputfile --output outputfile [options]
    --density         the density value to pass over to convert (default 300)
    --output          The output file path
    --tmproot         The path to the directory where the temporary directory will be placed. Default is taken from the XDG_CACHE_HOME env variable.
+#+end_src
