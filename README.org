@@ -1,0 +1,15 @@
+#+title: black-white
+
+* Description
+*black-white* will turn a input pdf file into monochromatic black and white, using pdftk and imagemagick's convert.
+
+* Usage
+black-white --input inputfile --output outputfile [options]
+
+ Options:
+   --help            brief help message
+   --man             full documentation
+   --pagesblock      how much to convert at a time (default 100). Decrease this value if you have memory issues.
+   --density         the density value to pass over to convert (default 300)
+   --output          The output file path
+   --tmproot         The path to the directory where the temporary directory will be placed. Default is taken from the XDG_CACHE_HOME env variable.
